@@ -19,7 +19,7 @@ class FindOutdatedPullRequests
   end
 
   def outdated_pull_requests(number)
-    pull = pull_requests.find { |p| p[:number] == number }
+    pull = pull_requests.find { |p| p[:number] == number.to_i }
 
     fail Error, "Can't find pull #{number}" if pull.nil?
 
@@ -67,7 +67,7 @@ class PullRequestCleaner < Sinatra::Base
     return "Unhandled event" unless request.env['HTTP_X_EVERYPOLITICIAN_EVENT'] == 'pull_request_opened'
     request.body.rewind
     payload = JSON.parse(request.body.read)
-    pull_request_number = payload['pull_request_url'].split('/').last
+    pull_request_number = payload['pull_request_url'].split('/').last.to_i
     PullRequestCleanerJob.perform_async(pull_request_number)
   end
 end
