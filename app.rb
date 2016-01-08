@@ -48,8 +48,8 @@ class PullRequestCleanerJob
     outdated = finder.outdated_pull_requests(pull_request_number)
     message = "This Pull Request has been superseded by ##{pull_request_number}"
     outdated.each do |pull|
-      GITHUB.add_comment(everypolitician_data_repo, pull_request_number, message)
-      GITHUB.close_pull_request(everypolitician_data_repo, pull_request_number)
+      GITHUB.add_comment(everypolitician_data_repo, pull[:number], message)
+      GITHUB.close_pull_request(everypolitician_data_repo, pull[:number])
     end
   end
 
