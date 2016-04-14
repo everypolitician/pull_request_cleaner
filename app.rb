@@ -46,10 +46,20 @@ class PullRequestCleanerJob
   def perform(pull_request_number)
     finder = FindOutdatedPullRequests.new(everypolitician_data_repo)
     outdated = finder.outdated_pull_requests(pull_request_number)
-    message = "This Pull Request has been superseded by ##{pull_request_number}"
     outdated.each do |pull|
-      GITHUB.add_comment(everypolitician_data_repo, pull[:number], message)
-      GITHUB.close_pull_request(everypolitician_data_repo, pull[:number])
+      commits = GITHUB.pull_request_commits(repository, pull[:number])
+      committers = commits.map { |c| c.author.login }.uniq.reject { |c| c == GITHUB.user.login }
+      if committers.empty? # The only commits were by @everypoliticianbot
+        message = "This Pull Request has been superseded by ##{pull_request_number}"
+        GITHUB.add_comment(everypolitician_data_repo, pull[:number], message)
+        GITHUB.close_pull_request(everypolitician_data_repo, pull[:number])
+      else # There are human commits
+        mentions = committers.map { |c| "@#{c}" }.join(', ')
+        message = "This Pull Request has been superseded by ##{pull_request_number}" \
+          " but there are non-bot commits.\n\n" \
+          "#{mentions} is this pull request still needed?"
+        GITHUB.add_comment(everypolitician_data_repo, pull[:number], message)
+      end
     end
   end
 
