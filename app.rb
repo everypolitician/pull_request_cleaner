@@ -47,7 +47,7 @@ class PullRequestCleanerJob
     finder = FindOutdatedPullRequests.new(everypolitician_data_repo)
     outdated = finder.outdated_pull_requests(pull_request_number)
     outdated.each do |pull|
-      commits = GITHUB.pull_request_commits(repository, pull[:number])
+      commits = GITHUB.pull_request_commits(everypolitician_data_repo, pull[:number])
       committers = commits.map { |c| c.author.login }.uniq.reject { |c| c == GITHUB.user.login }
       if committers.empty? # The only commits were by @everypoliticianbot
         message = "This Pull Request has been superseded by ##{pull_request_number}"
